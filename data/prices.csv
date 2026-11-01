@@ -1,6 +1,0 @@
-﻿checked_at,airline,price_per_person,total_price,outbound,return_flight,return_arrival,status,baggage,source
-2026-11-01T13:42:45+08:00,星宇 STARLUX,,,,,,NO_MATCH,UNVERIFIED,SerpApi Google Flights
-2026-11-01T14:00:20+08:00,長榮 EVA Air,40276,80552,BR 6,BR 5,2027-01-03 17:20,OK,UNVERIFIED,SerpApi Google Flights
-2026-11-01T14:00:20+08:00,華航 China Airlines,,,,,,NO_RETURN_MATCH,UNVERIFIED,SerpApi Google Flights
-2026-11-01T14:08:51+08:00,長榮 EVA Air,40276,80552,BR 6,BR 5,2027-01-03 17:20,OK,UNVERIFIED,SerpApi Google Flights
-2026-11-01T14:08:51+08:00,華航 China Airlines,,,,,,NO_RETURN_MATCH,UNVERIFIED,SerpApi Google Flights
