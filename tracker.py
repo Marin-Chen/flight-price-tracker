@@ -15,6 +15,8 @@ OUT_DATE='2026-12-24'
 RETURN_DATE='2027-01-02'
 ARRIVE_DATE='2027-01-03'
 MONTHLY_LIMIT=240
+# Two airlines, two runs/day: at most 4 requests per run.
+# Rotate outbound selections between runs to avoid checking the same pair forever.
 
 
 def load_usage():
@@ -24,7 +26,10 @@ def load_usage():
     except (FileNotFoundError, ValueError):
         usage={}
     if usage.get('month') != month:
-        usage={'month':month,'requests':0}
+        # Preserve rotating outbound cursors across month boundaries.
+        usage={'month':month,'requests':0,
+               'cursor_BR':usage.get('cursor_BR',0),
+               'cursor_CI':usage.get('cursor_CI',0)}
     return usage
 
 
@@ -89,19 +94,37 @@ def check_airline(key,usage,code,airline,timestamp):
         print(f'{code}: matching outbound options with token={len(candidates)}')
         if not candidates:
             return record(timestamp,airline,'NO_OUTBOUND')
-        selected=min(candidates,key=lambda x:x.get('price') if isinstance(x.get('price'),(int,float)) else float('inf'))
+        # Alternate between outbound options on successive runs.
+        # Store the cursor in the committed usage file for persistence.
+        cursor_key=f'cursor_{code}'
+        cursor=int(usage.get(cursor_key,0))
+        selected=candidates[cursor % len(candidates)]
+        usage[cursor_key]=cursor+1
+        save_usage(usage)
+        print(f'{code}: checking outbound option {cursor % len(candidates)+1}/{len(candidates)}: '
+              f'{direct(selected,"TPE","LAX",OUT_DATE,code).get("flight_number")}')
         outbound=direct(selected,'TPE','LAX',OUT_DATE,code)
         second=query(key,usage,code,departure_token=selected['departure_token'])
         matches=[]
         for option in choices(second):
+            legs=option.get('flights') or []
+            for leg in legs:
+                dep=leg.get('departure_airport') or {}
+                arr=leg.get('arrival_airport') or {}
+                print(f'{code}: returned flight={leg.get("flight_number")}, '
+                      f'{dep.get("id")} {dep.get("time")} -> '
+                      f'{arr.get("id")} {arr.get("time")}')
             returning=direct(option,'LAX','TPE',RETURN_DATE,code)
             if not returning:
+                print(f'{code}: excluded return: not a direct {code} flight departing LAX on {RETURN_DATE}')
                 continue
             arrival=str((returning.get('arrival_airport') or {}).get('time') or '')
             if not arrival.startswith(ARRIVE_DATE):
+                print(f'{code}: excluded return: arrival {arrival} is not {ARRIVE_DATE}')
                 continue
             price=option.get('price')
             if not isinstance(price,(int,float)) or price<=0:
+                print(f'{code}: excluded return: missing valid total price')
                 continue
             matches.append(record(timestamp,airline,'OK',price,
                                   outbound.get('flight_number',''),
