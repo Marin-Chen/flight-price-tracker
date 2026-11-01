@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   schedule:
     # UTC; Taiwan is UTC+8. Scheduled jobs may start late.
-    - cron: '0 0,6,12 * * *'
+    - cron: '0 0,12 * * *'
 permissions:
   contents: write
 concurrency:
