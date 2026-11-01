@@ -11,9 +11,9 @@ FILE = ROOT / 'data' / 'prices.csv'
 USAGE = ROOT / 'data' / 'api_usage.json'
 FIELDS = ['checked_at','airline','price_per_person','total_price','outbound','return_flight','return_arrival','status','baggage','source']
 AIRLINES = {'BR':'長榮 EVA Air','CI':'華航 China Airlines'}
-OUT_DATE='2026-12-24'
-RETURN_DATE='2027-01-02'
-ARRIVE_DATE='2027-01-03'
+OUT_DATE = '2026-12-24'
+RETURN_DATE = '2027-01-01'
+ARRIVE_DATE = '2027-01-03'
 MONTHLY_LIMIT=240
 # Two airlines, two runs/day: at most 4 requests per run.
 # Rotate outbound selections between runs to avoid checking the same pair forever.
