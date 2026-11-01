@@ -2,7 +2,7 @@ name: Update flight prices
 on:
   workflow_dispatch:
   schedule:
-    # UTC; Taiwan is UTC+8. Scheduled jobs may start late.
+    # UTC -> Taiwan 08:00, 20:00
     - cron: '0 0,12 * * *'
 permissions:
   contents: write
@@ -13,10 +13,10 @@ jobs:
   track:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           persist-credentials: true
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - run: pip install -r requirements.txt
@@ -24,12 +24,11 @@ jobs:
         env:
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
         run: python tracker.py
-      - name: Commit updated CSV
+      - name: Commit updated data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/prices.csv
+          git add data/prices.csv data/api_usage.json
           if ! git diff --cached --quiet; then
             git commit -m "Update flight prices"
             git push
-          fi
